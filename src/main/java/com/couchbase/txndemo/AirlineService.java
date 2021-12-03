@@ -151,7 +151,7 @@ public class AirlineService {
 
 	@Transactional
 	public void insertRollbackRepo(String airlineId) {
-		log("found: ", airlineRepo.save(new Airline(airlineId, myAirline)));
+		log("insert: ", airlineRepo.save(new Airline(airlineId, myAirline)));
 		simulateFailureWithException();
 	}
 
@@ -201,14 +201,20 @@ public class AirlineService {
 			log("found: ", b);
 			org.junit.jupiter.api.Assertions.assertEquals(a, b, s);
 		} catch (AssertionError e) {
-			log("<H2>", e.getMessage(), "</H2>");
+			log(e);
 		}
 	}
 
 	public Object log(Object... args) {
 		sb.append("<br>tx: ");
 		for (Object s : args) {
+			if(s instanceof Exception){
+				sb.append("<h2>");
+			}
 			sb.append(s);
+			if(s instanceof Exception){
+				sb.append("</h2>");
+			}
 		}
 		sb.append("\n");
 		for(Object a:args){
