@@ -12,7 +12,7 @@
 	<artifactId>txdemo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>txdemo</name>
-	<description>txdemo project for Spring Boot</description>
+	<description>Couchbase Transactions Demo with Spring Boot</description>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-couchbase</artifactId>
-			<version>4.4.0-SNAPSHOT</version>
+			<version>4.4.0-tx-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -46,15 +46,10 @@
 			<version>1.2.2</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.7</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>

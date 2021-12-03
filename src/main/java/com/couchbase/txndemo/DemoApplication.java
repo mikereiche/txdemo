@@ -1,4 +1,20 @@
-package com.example.demo;
+/*
+ * Copyright (c) 2021 Couchbase, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.couchbase.txndemo;
 
 import static com.couchbase.client.java.query.QueryScanConsistency.REQUEST_PLUS;
 
@@ -8,7 +24,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.couchbase.client.java.query.QueryOptions;
 import com.couchbase.transactions.error.TransactionFailed;
-import com.example.demo.service.AirlineService;
 
 @SpringBootApplication
 @RestController
@@ -26,45 +40,21 @@ public class DemoApplication {
 
 	private final CouchbaseTemplate template;
 
-	@Autowired MyAirlineRepository airlineRepo;
-	@Autowired MyAirlineNoKeyRepository airlineNoKeyRepo;
-	@Autowired AirlineService airlineService;
+	@Autowired
+	MyAirlineRepository airlineRepo;
 
-	static GenericApplicationContext context;
+	@Autowired
+	MyAirlineNoKeyRepository airlineNoKeyRepo;
+
+	@Autowired
+	AirlineService airlineService;
+
 	String airlineId;
 	public static String myAirline = "My Airline";
 	public static String yourAirline = "Your Airline";
 	QueryOptions requestPlus = QueryOptions.queryOptions().scanConsistency(REQUEST_PLUS);
 	StringBuffer sb = new StringBuffer();
 	long t0;
-
-	public void before() {
-		System.err.println("before");
-		airlineId = methodName();
-		airlineService.setSb(sb);
-		t0 = System.currentTimeMillis();
-		removeAll(Airline.class);
-		removeAll(AirlineNoKey.class);
-		if ((System.currentTimeMillis() - t0) > 1000) {
-			log("You may wish to create an index to speed things up: create index class_index on `travel-sample`(_class)");
-		}
-		System.err.println("starting " + (System.currentTimeMillis() - t0) + "ms");
-		log(displayText(new StringBuffer()));
-		log(methodName());
-		t0 = System.currentTimeMillis();
-	}
-
-	public String after() {
-		log("<br>et: ", System.currentTimeMillis() - t0, "ms");
-		System.err.println("done");
-		String output = sb.toString();
-		sb.setLength(0);
-		return output;
-	}
-
-	String methodName() { // called from before
-		return Thread.currentThread().getStackTrace()[3].getMethodName();
-	}
 
 	public DemoApplication(@Autowired CouchbaseTemplate template) {
 		this.template = template;
@@ -115,7 +105,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				throw new RuntimeException(e.getCause());
 			}
 		}
@@ -134,7 +124,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				throw new RuntimeException(e.getCause());
 			}
 		}
@@ -240,7 +230,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				log(e.getCause());
 			}
 		}
@@ -256,7 +246,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				log(e.getCause());
 			}
 		}
@@ -273,7 +263,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				log(e.getCause());
 			}
 		}
@@ -290,7 +280,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				log(e.getCause());
 			}
 		}
@@ -307,7 +297,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				log(e.getCause());
 			}
 		}
@@ -324,7 +314,7 @@ public class DemoApplication {
 		} catch (TransactionFailed e) {
 			System.err.println(e);
 			log("caught: ", e);
-			if (!(e.getCause() instanceof PoofException)) {
+			if (!(e.getCause() instanceof SimulatedFailureException)) {
 				log(e.getCause());
 			}
 		}
@@ -341,7 +331,37 @@ public class DemoApplication {
 
 	}
 
-	public static class PoofException extends RuntimeException {}
+	// --- Utilities ---
+
+	public void before() {
+		airlineId = methodName();
+		airlineService.setSb(sb);
+		t0 = System.currentTimeMillis();
+		removeAll(Airline.class);
+		removeAll(AirlineNoKey.class);
+		if ((System.currentTimeMillis() - t0) > 1000) {
+			log("You may wish to create an index to speed things up: create index class_index on `travel-sample`(_class)");
+		}
+		log(displayText(new StringBuffer()));
+		log(methodName());
+		t0 = System.currentTimeMillis();
+	}
+
+	public String after() {
+		log("<br>Ran in: ", System.currentTimeMillis() - t0, "ms");
+		String output = sb.toString();
+		sb.setLength(0);
+		return output;
+	}
+
+	String methodName() { // called from before
+		return Thread.currentThread().getStackTrace()[3].getMethodName();
+	}
+
+	/**
+	 * Thrown to simulate certain kinds of failures for example.
+	 */
+	public static class SimulatedFailureException extends RuntimeException {}
 
 	StringBuffer displayText(StringBuffer sb) {
 		String urlPrefix = "http://localhost:8080";
@@ -384,15 +404,6 @@ public class DemoApplication {
 	private void assertFalse(boolean b, String s) {
 		try {
 			org.junit.jupiter.api.Assertions.assertFalse(b, s);
-		} catch (AssertionError e) {
-			log("<br><H2>", e.getMessage());
-		}
-	}
-
-	private void assertNotEquals(Object a, Object b, String s) {
-		try {
-			log("found: ",b);
-			org.junit.jupiter.api.Assertions.assertNotEquals(a, b, s);
 		} catch (AssertionError e) {
 			log("<br><H2>", e.getMessage());
 		}
