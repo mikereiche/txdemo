@@ -70,4 +70,11 @@ public class DatabaseConfiguration extends AbstractCouchbaseConfiguration {
     return bucketName;
   }
 
+  /* for testing on single cb server instance
+  @Override
+  public TransactionConfig transactionConfig() {
+    return TransactionConfigBuilder.create().logDirectly(Event.Severity.INFO).logOnFailure(true, Event.Severity.ERROR)
+        .expirationTime(Duration.ofSeconds(10)).durabilityLevel(TransactionDurabilityLevel.NONE).build();
+  }
+   */
 }
